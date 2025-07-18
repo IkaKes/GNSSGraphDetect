@@ -1,0 +1,25 @@
+stages:
+  prepare_data:
+    cmd: python prepare_data.py
+    deps:
+    - prepare_data.py
+    - params.yaml
+    - gnss/
+    outs:
+    - ${output_dir}
+  train:
+    cmd: python run_experiment.py
+    deps:
+    - run_experiment.py
+    - gnss/
+    - params.yaml
+    - ${output_dir}
+    outs:
+    #- ${train.output_dir}/best_full_model_lightning.pth
+    - ${train.output_dir}/best_model.ckpt
+    - ${train.output_dir}/dvclive/metrics.json:
+        cache: false
+    - ${train.output_dir}/dvclive/plots:
+        cache: false
+    metrics:
+    - ${train.output_dir}/metrics.yaml

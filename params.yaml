@@ -1,0 +1,41 @@
+# ================================================================
+# Glavni parametri eksperimenata 
+# ================================================================
+receiver_name: Ublox10
+jamming_type: cw
+jamming_power: '-50'
+seed: 42
+
+# ================================================================
+# Parametri za prepare_data.py
+# ================================================================
+prepare_data:
+  train_ratio: 0.7
+  val_ratio: 0.15
+
+  window_size: 10
+  stride: 10
+
+# ================================================================
+# Parametri za train.py
+# ================================================================
+train:
+  model_name: "FullModel"
+  n_epochs: 40
+  hidden_dim: 128
+  
+  # optimizator 
+  initial_lr: 0.0001
+  weight_decay_val: 0.01
+
+  # Early Stopping
+  early_stopping:
+    monitor: val_loss
+    patience: 5
+    mode: 'min'
+    min_delta: 0.001
+    verbose: True
+
+  accelerator: "cuda"
+  devices: 1
+
