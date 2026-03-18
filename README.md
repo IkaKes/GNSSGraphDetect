@@ -3,7 +3,7 @@
 ## Overview
 
 **JaGuard (Jamming Guardian)** is a deep temporal graph neural network designed to estimate and correct jamming-induced positional drift in GNSS systems. 
-JaGuard reformulates mitigation as a **dynamic graph regression problem**. It models the satellite-receiver constellation as a sequence of heterogeneous star graphs, capturing the physical deterioration of the signal over time.
+JaGuard defines this task as a **dynamic graph regression problem**. It models the satellite-receiver constellation as a sequence of heterogeneous star graphs, capturing the physical deterioration of the signal over time.
 
 ### Key Features:
 - **Dynamic Star Graph:** Models the receiver as a central node and visible satellites as leaf nodes.
@@ -16,12 +16,12 @@ JaGuard reformulates mitigation as a **dynamic graph regression problem**. It mo
 
 ```text
 ├── gnss/                  # Core library
-│   ├── train/             # Training logic and LSTM gate definitions
-│   ├── dataset.py         # Graph construction, sliding windows & normalization
-│   └── model.py           # JaGuard architecture (HeteroGCLSTM)
+│   ├── train/             # Training logic
+│   ├── dataset.py         # Graph construction & normalization
+│   └── model.py           # JaGuard architecture 
 ├── params.yaml            # Central experiment configuration
-├── prepare_data.py        # Data preprocessing (NMEA → Z-score normalized graphs)
-├── run_experiment.py      # Execution for a single configuration/seed
+├── prepare_data.py        # Data preprocessing
+├── run_experiment.py      # Execution for a single configuration
 ├── run_all_experiments.py # Master script for automated experimental sweeps
 ├── dvc.yaml               # DVC pipeline orchestration
 └── README.md 
@@ -49,7 +49,7 @@ pip install -r requirements.txt
 
 ## Automated Pipeline
 
-This project is fully instrumented with Data Version Control (DVC) to ensure reproducibility. To simplify the research workflow, we use an automated sweep script that manages parameter updates and triggers the DVC pipeline internally. 
+This project is fully instrumented with Data Version Control (DVC). To simplify the research workflow, we use an automated sweep script that manages parameter updates and triggers the DVC pipeline internally. 
 This script automatically updates params.yaml for each configuration and executes dvc repro for you.
 
 ### 1. Run the full sweep with default settings 
