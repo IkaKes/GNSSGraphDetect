@@ -3,15 +3,13 @@
 ## Overview
 
 **JaGuard (Jamming Guardian)** is the first deep temporal graph neural network designed to estimate and correct jamming-induced positional drift in GNSS systems. 
-
-Unlike reactive anomaly detection, JaGuard reformulates mitigation as a **dynamic graph regression problem**. [cite_start]It models the satellite-receiver constellation as a sequence of heterogeneous star graphs, capturing the physical deterioration of the signal over time.
+JaGuard reformulates mitigation as a **dynamic graph regression problem**. It models the satellite-receiver constellation as a sequence of heterogeneous star graphs, capturing the physical deterioration of the signal over time.
 
 ### Key Features:
 **Dynamic Star Graph:** Models the receiver as a central node and visible satellites as leaf nodes.
 **Spatiotemporal Fusion:** Uses a **HeteroGCLSTM** layer to process 10-second windows of signal history.
 **Minimalist Input:** Operates exclusively on standard NMEA observables (SNR, Azimuth, Elevation; Latitude and Longitude).
 **High Resilience:** Maintains centimeter-level accuracy even under severe -45 dBm jamming and  data starvation.
-
 
 
 ## Project Structure
@@ -24,10 +22,10 @@ Unlike reactive anomaly detection, JaGuard reformulates mitigation as a **dynami
 ├── params.yaml            # Central experiment configuration
 ├── prepare_data.py        # Data preprocessing (NMEA → Z-score normalized graphs)
 ├── run_experiment.py      # Execution for a single configuration/seed
-├── run_all_experiments.py  # Master script for automated experimental sweeps
+├── run_all_experiments.py # Master script for automated experimental sweeps
 ├── dvc.yaml               # DVC pipeline orchestration
-└── README.md
-
+└── README.md 
+```
 ## Installation
 
 Make sure you have [Conda](https://docs.conda.io/en/latest/) installed:
