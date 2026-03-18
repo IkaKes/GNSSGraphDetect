@@ -1,61 +1,85 @@
-# GNSS
+# JaGuard: Jamming Correction of GNSS Deviation with Deep Temporal Graphs
 
-<a target="_blank" href="https://cookiecutter-data-science.drivendata.org/">
-    <img src="https://img.shields.io/badge/CCDS-Project%20template-328F97?logo=cookiecutter" />
-</a>
+<p align="center">
+  <b>Receiver-centric deep temporal graph learning for GNSS jamming mitigation</b>
+</p>
 
-A short description of the project.
+<p align="center">
+  <img src="https://img.shields.io/badge/python-3.10-blue.svg" />
+  <img src="https://img.shields.io/badge/pytorch-2.x-orange.svg" />
+  <img src="https://img.shields.io/badge/status-research-green.svg" />
+  <img src="https://img.shields.io/badge/license-MIT-lightgrey.svg" />
+</p>
 
-## Project Organization
+---
 
-```
-├── LICENSE            <- Open-source license if one is chosen
-├── Makefile           <- Makefile with convenience commands like `make data` or `make train`
-├── README.md          <- The top-level README for developers using this project.
-├── data
-│   ├── external       <- Data from third party sources.
-│   ├── interim        <- Intermediate data that has been transformed.
-│   ├── processed      <- The final, canonical data sets for modeling.
-│   └── raw            <- The original, immutable data dump.
-│
-├── docs               <- A default mkdocs project; see www.mkdocs.org for details
-│
-├── models             <- Trained and serialized models, model predictions, or model summaries
-│
-├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
-│                         the creator's initials, and a short `-` delimited description, e.g.
-│                         `1.0-jqp-initial-data-exploration`.
-│
-├── pyproject.toml     <- Project configuration file with package metadata for 
-│                         gnss and configuration for tools like black
-│
-├── references         <- Data dictionaries, manuals, and all other explanatory materials.
-│
-├── reports            <- Generated analysis as HTML, PDF, LaTeX, etc.
-│   └── figures        <- Generated graphics and figures to be used in reporting
-│
-├── requirements.txt   <- The requirements file for reproducing the analysis environment, e.g.
-│                         generated with `pip freeze > requirements.txt`
-│
-├── setup.cfg          <- Configuration file for flake8
-│
-└── gnss   <- Source code for use in this project.
-    │
-    ├── __init__.py             <- Makes gnss a Python module
-    │
-    ├── config.py               <- Store useful variables and configuration
-    │
-    ├── dataset.py              <- Scripts to download or generate data
-    │
-    ├── features.py             <- Code to create features for modeling
-    │
-    ├── modeling                
-    │   ├── __init__.py 
-    │   ├── predict.py          <- Code to run model inference with trained models          
-    │   └── train.py            <- Code to train models
-    │
-    └── plots.py                <- Code to create visualizations
-```
+## Overview
 
---------
+[cite_start]**JaGuard (Jamming Guardian)** is the first deep temporal graph neural network designed to estimate and correct jamming-induced positional drift in GNSS systems. 
+
+[cite_start]Unlike reactive anomaly detection, JaGuard reformulates mitigation as a **dynamic graph regression problem**. [cite_start]It models the satellite-receiver constellation as a sequence of heterogeneous star graphs, capturing the physical deterioration of the signal over time[cite: 9, 16, 120].
+
+### Key Features
+**Dynamic Star Graph:** Models the receiver as a central node and visible satellites as leaf nodes.
+**Spatiotemporal Fusion:** Uses a **HeteroGCLSTM** layer to process 10-second windows of signal history.
+**Minimalist Input:** Operates exclusively on standard NMEA observables (SNR, Azimuth, Elevation; Latitude and Longitude).
+**High Resilience:** Maintains centimeter-level accuracy even under severe -45 dBm jamming and  data starvation.
+
+
+
+---
+
+## Project Structure
+
+
+.
+├── gnss/                  # Core library
+│   ├── train/             # Training logic and LSTM gate definitions
+│   ├── dataset.py         # Graph construction, sliding windows & normalization
+│   └── model.py           # JaGuard architecture (HeteroGCLSTM)
+├── params.yaml            # Central experiment configuration
+├── prepare_data.py        # Data preprocessing (NMEA → Z-score normalized graphs)
+├── run_experiment.py      # Execution for a single configuration/seed
+├── run_all_experiments.py  # Master script for automated experimental sweeps
+├── dvc.yaml               # DVC pipeline orchestration
+└── README.md
+
+## Installation
+
+Make sure you have [Conda](https://docs.conda.io/en/latest/) installed:
+
+# 1. Create environment
+conda create --solver classic -n gnss-py310 \
+  python=3.10 \
+  numpy=1.24.4 \
+  scipy=1.15.2 \
+  pandas=1.3.5 \
+  scikit-learn \
+  -c conda-forge -y
+
+# 2. Activate environment
+source $(conda info --base)/etc/profile.d/conda.sh
+conda activate gnss-py310
+
+# 3. Install remaining dependencies
+pip install -r requirements.txt
+
+
+## Automated Pipeline
+
+This project is fully instrumented with Data Version Control (DVC) to ensure reproducibility. To simplify the research workflow, we use an automated sweep script that manages parameter updates and triggers the DVC pipeline internally. 
+To automate the evaluation across all discovered receivers, jamming types, and power levels, use the run_all_experiments.py script. This script automatically updates params.yaml for each configuration and executes dvc repro for you.
+# Run the full sweep with default settings 
+python run_all_experiments.py
+
+# Optional: Run a dry-run to see the experiment matrix without executing
+python run_all_experiments.py --dry-run
+
+# Optional: Filter by specific receivers or define custom seeds
+python run_all_experiments.py --receivers Ublox10,GP01 --seeds 42,2024
+
+## Citation
+
+
+
 
