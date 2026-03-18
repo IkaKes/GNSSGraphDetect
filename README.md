@@ -1,17 +1,5 @@
 # JaGuard: Jamming Correction of GNSS Deviation with Deep Temporal Graphs
 
-<p align="center">
-  <b>Receiver-centric deep temporal graph learning for GNSS jamming mitigation</b>
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/python-3.10-blue.svg" />
-  <img src="https://img.shields.io/badge/pytorch-2.x-orange.svg" />
-  <img src="https://img.shields.io/badge/status-research-green.svg" />
-  <img src="https://img.shields.io/badge/license-MIT-lightgrey.svg" />
-</p>
-
----
 
 ## Overview
 
@@ -26,8 +14,6 @@
 **High Resilience:** Maintains centimeter-level accuracy even under severe -45 dBm jamming and  data starvation.
 
 
-
----
 
 ## Project Structure
 
@@ -48,7 +34,7 @@
 
 Make sure you have [Conda](https://docs.conda.io/en/latest/) installed:
 
-# 1. Create environment
+### 1. Create environment
 conda create --solver classic -n gnss-py310 \
   python=3.10 \
   numpy=1.24.4 \
@@ -57,11 +43,11 @@ conda create --solver classic -n gnss-py310 \
   scikit-learn \
   -c conda-forge -y
 
-# 2. Activate environment
+### 2. Activate environment
 source $(conda info --base)/etc/profile.d/conda.sh
 conda activate gnss-py310
 
-# 3. Install remaining dependencies
+### 3. Install remaining dependencies
 pip install -r requirements.txt
 
 
@@ -69,13 +55,13 @@ pip install -r requirements.txt
 
 This project is fully instrumented with Data Version Control (DVC) to ensure reproducibility. To simplify the research workflow, we use an automated sweep script that manages parameter updates and triggers the DVC pipeline internally. 
 To automate the evaluation across all discovered receivers, jamming types, and power levels, use the run_all_experiments.py script. This script automatically updates params.yaml for each configuration and executes dvc repro for you.
-# Run the full sweep with default settings 
+### Run the full sweep with default settings 
 python run_all_experiments.py
 
-# Optional: Run a dry-run to see the experiment matrix without executing
+### Optional: Run a dry-run to see the experiment matrix without executing
 python run_all_experiments.py --dry-run
 
-# Optional: Filter by specific receivers or define custom seeds
+#### Optional: Filter by specific receivers or define custom seeds
 python run_all_experiments.py --receivers Ublox10,GP01 --seeds 42,2024
 
 ## Citation
