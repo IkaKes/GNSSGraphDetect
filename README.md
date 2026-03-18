@@ -1,13 +1,12 @@
 # JaGuard: Jamming Correction of GNSS Deviation with Deep Temporal Graphs
 
-
 ## Overview
 
-[cite_start]**JaGuard (Jamming Guardian)** is the first deep temporal graph neural network designed to estimate and correct jamming-induced positional drift in GNSS systems. 
+**JaGuard (Jamming Guardian)** is the first deep temporal graph neural network designed to estimate and correct jamming-induced positional drift in GNSS systems. 
 
-[cite_start]Unlike reactive anomaly detection, JaGuard reformulates mitigation as a **dynamic graph regression problem**. [cite_start]It models the satellite-receiver constellation as a sequence of heterogeneous star graphs, capturing the physical deterioration of the signal over time[cite: 9, 16, 120].
+Unlike reactive anomaly detection, JaGuard reformulates mitigation as a **dynamic graph regression problem**. [cite_start]It models the satellite-receiver constellation as a sequence of heterogeneous star graphs, capturing the physical deterioration of the signal over time.
 
-### Key Features
+### Key Features:
 **Dynamic Star Graph:** Models the receiver as a central node and visible satellites as leaf nodes.
 **Spatiotemporal Fusion:** Uses a **HeteroGCLSTM** layer to process 10-second windows of signal history.
 **Minimalist Input:** Operates exclusively on standard NMEA observables (SNR, Azimuth, Elevation; Latitude and Longitude).
@@ -17,8 +16,7 @@
 
 ## Project Structure
 
-
-.
+```text
 ├── gnss/                  # Core library
 │   ├── train/             # Training logic and LSTM gate definitions
 │   ├── dataset.py         # Graph construction, sliding windows & normalization
@@ -55,13 +53,13 @@ pip install -r requirements.txt
 
 This project is fully instrumented with Data Version Control (DVC) to ensure reproducibility. To simplify the research workflow, we use an automated sweep script that manages parameter updates and triggers the DVC pipeline internally. 
 To automate the evaluation across all discovered receivers, jamming types, and power levels, use the run_all_experiments.py script. This script automatically updates params.yaml for each configuration and executes dvc repro for you.
-### Run the full sweep with default settings 
+### 1. Run the full sweep with default settings 
 python run_all_experiments.py
 
-### Optional: Run a dry-run to see the experiment matrix without executing
+### 2. Optional: Run a dry-run to see the experiment matrix without executing
 python run_all_experiments.py --dry-run
 
-#### Optional: Filter by specific receivers or define custom seeds
+#### 3. Optional: Filter by specific receivers or define custom seeds
 python run_all_experiments.py --receivers Ublox10,GP01 --seeds 42,2024
 
 ## Citation
