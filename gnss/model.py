@@ -1,70 +1,69 @@
 import torch
 import torch.nn as nn
-import numpy as np
 from torch_geometric_temporal.nn.hetero import HeteroGCLSTM
 
 
-class FullModel(nn.Module):
-
-    def __init__(self, in_channels_dict, hidden_dim, metadata, dropout_rate=0.1):
+class JaGuard(nn.Module):
+    def __init__(self, in_channels_dict, hidden_dim, metadata, num_total_sats, dropout_rate=0.1):
         super().__init__()
-        
+
+        self.hidden_dim = hidden_dim
+        self.num_total_sats = num_total_sats
+
         self.gclstm = HeteroGCLSTM(
             in_channels_dict=in_channels_dict,
             out_channels=hidden_dim,
             metadata=metadata
         )
-        
         self.dropout = nn.Dropout(dropout_rate)
-        
         self.linear_out = nn.Linear(hidden_dim, 2)
 
     def forward(self, window_snapshots, device):
-     
-        hidden_dim = self.linear_out.in_features
-        
+        # Initialize per-window memory for all satellites
+        h_sat_memory = torch.zeros(self.num_total_sats, self.hidden_dim, device=device)
+        c_sat_memory = torch.zeros(self.num_total_sats, self.hidden_dim, device=device)
 
-        h_state = {'receiver': torch.zeros(hidden_dim, device=device)}
-        c_state = {'receiver': torch.zeros(hidden_dim, device=device)}
+        h_rec = torch.zeros(1, self.hidden_dim, device=device)
+        c_rec = torch.zeros(1, self.hidden_dim, device=device)
 
-        for snapshot in window_snapshots[:-1]:
-            x_dict_for_gclstm = snapshot.x_dict
-            eidx_on_device = snapshot.edge_index_dict
-            
-            s_ids_val = snapshot['satellite_s_ids']['satellite_s_ids']
-            
+        # Iterate through all snapshots in the window
+        for snapshot in window_snapshots:
+            snapshot = snapshot.to(device)
+            x_dict = snapshot.x_dict
+            eidx = snapshot.edge_index_dict
 
-            num_sat = s_ids_val.shape[0]
-            
-            h_sat = torch.zeros((num_sat, hidden_dim), device=device)
-            c_sat = torch.zeros((num_sat, hidden_dim), device=device)
+            # satellite_s_ids is stored under double-key in PyG NodeStorage
+            s_ids_raw = snapshot['satellite_s_ids']['satellite_s_ids']
+            if not isinstance(s_ids_raw, torch.Tensor):
+                s_ids_raw = torch.tensor(s_ids_raw, dtype=torch.long)
+            s_ids = s_ids_raw.to(device).reshape(-1)
 
-            rec_h = h_state['receiver'].unsqueeze(0)
-            rec_c = c_state['receiver'].unsqueeze(0)
+            # READ: select only currently visible satellites from memory bank
+            if s_ids.numel() > 0:
+                h_sat_active = torch.index_select(h_sat_memory, 0, s_ids)
+                c_sat_active = torch.index_select(c_sat_memory, 0, s_ids)
+            else:
+                # No satellites visible — active state is empty 
+                h_sat_active = torch.empty((0, self.hidden_dim), device=device)
+                c_sat_active = torch.empty((0, self.hidden_dim), device=device)
 
-            for j, sid_tensor in enumerate(s_ids_val):
-                sid_key = sid_tensor.item()
-                if sid_key in h_state:
-                    h_sat[j] = h_state[sid_key]
-                    c_sat[j] = c_state[sid_key]
-            
-            h_dict_step = {'receiver': rec_h, 'satellite': h_sat}
-            c_dict_step = {'receiver': rec_c, 'satellite': c_sat}
-            
-            h_out, c_out = self.gclstm(x_dict_for_gclstm, eidx_on_device, h_dict_step, c_dict_step)
-            
-            h_state['receiver'] = h_out['receiver'][0]
-            c_state['receiver'] = c_out['receiver'][0]
-            
-            for j, sid_tensor in enumerate(s_ids_val):
-                sid_key = sid_tensor.item()
-                h_state[sid_key] = h_out['satellite'][j]
-                c_state[sid_key] = c_out['satellite'][j]
-        
-        h_final = h_state['receiver'].unsqueeze(0)
-        h_dropped = self.dropout(h_final)
-        pred_norm = self.linear_out(h_dropped)
-        true_norm = window_snapshots[-1].y_dict['receiver']
-        
-        return pred_norm, true_norm
+            h_dict_in = {'receiver': h_rec, 'satellite': h_sat_active}
+            c_dict_in = {'receiver': c_rec, 'satellite': c_sat_active}
 
+            # LSTM STEP
+            h_out, c_out = self.gclstm(x_dict, eidx, h_dict_in, c_dict_in)
+
+            # Update receiver state
+            h_rec = h_out['receiver']
+            c_rec = c_out['receiver']
+
+            # updated states back to memory bank
+            if s_ids.numel() > 0:
+                h_sat_memory = h_sat_memory.index_put((s_ids,), h_out['satellite'])
+                c_sat_memory = c_sat_memory.index_put((s_ids,), c_out['satellite'])
+
+        # Predict from final receiver hidden state
+        pred = self.linear_out(self.dropout(h_rec))
+        true = window_snapshots[-1].y_dict['receiver']
+
+        return pred, true

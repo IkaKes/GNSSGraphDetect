@@ -15,7 +15,6 @@ stages:
     - params.yaml
     - ${output_dir}
     outs:
-    #- ${train.output_dir}/best_full_model_lightning.pth
     - ${train.output_dir}/best_model.ckpt
     - ${train.output_dir}/dvclive/metrics.json:
         cache: false

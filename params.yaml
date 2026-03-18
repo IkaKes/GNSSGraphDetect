@@ -1,41 +1,27 @@
-# ================================================================
-# Glavni parametri eksperimenata 
-# ================================================================
-receiver_name: Ublox10
-jamming_type: cw
-jamming_power: '-50'
+jamming_power: '-45'
+jamming_type: cw3
+receiver_name: GP01
 seed: 42
+output_dir: PARSED_PROCESSED/GP01/cw3/-45/seed_42
 
-# ================================================================
-# Parametri za prepare_data.py
-# ================================================================
 prepare_data:
-  train_ratio: 0.7
-  val_ratio: 0.15
-
+  train_val_ratio: 0.80
+  val_split_ratio: 0.10
   window_size: 10
   stride: 10
 
-# ================================================================
-# Parametri za train.py
-# ================================================================
 train:
-  model_name: "FullModel"
-  n_epochs: 40
-  hidden_dim: 128
-  
-  # optimizator 
-  initial_lr: 0.0001
+  accelerator: cuda
+  devices: 1
+  hidden_dim: 256
+  initial_lr: 0.001
   weight_decay_val: 0.01
-
-  # Early Stopping
+  n_epochs: 100
+  model_name: JaGuard
+  output_dir: PARSED_REPORTS/GP01/cw3/-45/seed_42
   early_stopping:
     monitor: val_loss
-    patience: 5
-    mode: 'min'
+    mode: min
+    patience: 10
     min_delta: 0.001
-    verbose: True
-
-  accelerator: "cuda"
-  devices: 1
-
+    verbose: true
